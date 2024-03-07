@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_jerman_dictionary/main.dart';
 import 'package:mobile_jerman_dictionary/page/onboading.dart';
 
 class SplashScreen extends StatefulWidget {
