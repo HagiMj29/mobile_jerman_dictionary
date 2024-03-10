@@ -13,12 +13,13 @@ class ListKamus extends StatefulWidget {
 class _ListKamusState extends State<ListKamus> {
   List<Result> kamusList = [];
   List<Result> searchResults = [];
-
   TextEditingController controller = TextEditingController();
+  late ScrollController scrollController;
 
   @override
   void initState() {
     super.initState();
+    scrollController = ScrollController()..addListener(scrollListener);
     fetchKamus();
   }
 
@@ -45,6 +46,16 @@ class _ListKamusState extends State<ListKamus> {
           result.kataIndonesia.toLowerCase().contains(query.toLowerCase()))
           .toList();
     });
+  }
+
+  void scrollListener() {
+    if (scrollController.offset >= scrollController.position.maxScrollExtent &&
+        !scrollController.position.outOfRange) {
+      // Reach the bottom, load more data
+      // Implement the logic to fetch more data from the API here
+      // For now, let's just fetch the data again for demonstration
+      fetchKamus();
+    }
   }
 
   @override
@@ -77,45 +88,55 @@ class _ListKamusState extends State<ListKamus> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: searchResults.length,
+              controller: scrollController,
+              itemCount: searchResults.length + 1,
               itemBuilder: (context, index) {
-                Result data = searchResults[index];
-                return Padding(
-                  padding: EdgeInsets.all(8),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DetailKamus(data),
-                        ),
-                      );
-                    },
-                    child: Card(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ListTile(
-                            title: Text(
-                              "${data.kataJerman}",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              "${data.kataIndonesia}",
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.black54,
-                              ),
-                            ),
+                if (index < searchResults.length) {
+                  Result data = searchResults[index];
+                  return Padding(
+                    padding: EdgeInsets.all(8),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DetailKamus(data),
                           ),
-                        ],
+                        );
+                      },
+                      child: Card(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ListTile(
+                              title: Text(
+                                "${data.kataJerman}",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                "${data.kataIndonesia}",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
+                  );
+                } else {
+                  // Loading indicator
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.blue,
+                    ),
+                  );
+                }
               },
             ),
           ),
@@ -123,8 +144,10 @@ class _ListKamusState extends State<ListKamus> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
 }
-
-
-
-
